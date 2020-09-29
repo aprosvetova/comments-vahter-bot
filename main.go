@@ -6,8 +6,12 @@ import (
 	"time"
 )
 
+var b *tb.Bot
+
 func main() {
-	b, err := tb.NewBot(tb.Settings{
+	var err error
+
+	b, err = tb.NewBot(tb.Settings{
 		Token:  os.Getenv("TG_TOKEN"),
 		Poller: &tb.LongPoller{Timeout: 10 * time.Second},
 	})
@@ -25,18 +29,37 @@ func main() {
 		}
 	})
 
-	b.Handle(tb.OnText, func(m *tb.Message) {
-		if m.ReplyTo == nil {
-			res, err := b.ChatMemberOf(m.Chat, m.Sender)
-			if err == nil && res.Role != tb.Creator && res.Role != tb.Administrator {
-				b.Delete(m)
-			}
-		}
-	})
+	// WHAT THE FUCK, TUCNAK?!
+	b.Handle(tb.OnText, deleteMessage)
+	b.Handle(tb.OnPhoto, deleteMessage)
+	b.Handle(tb.OnAudio, deleteMessage)
+	b.Handle(tb.OnAnimation, deleteMessage)
+	b.Handle(tb.OnDocument, deleteMessage)
+	b.Handle(tb.OnSticker, deleteMessage)
+	b.Handle(tb.OnVideo, deleteMessage)
+	b.Handle(tb.OnVoice, deleteMessage)
+	b.Handle(tb.OnVideoNote, deleteMessage)
+	b.Handle(tb.OnContact, deleteMessage)
+	b.Handle(tb.OnLocation, deleteMessage)
+	b.Handle(tb.OnVenue, deleteMessage)
+	b.Handle(tb.OnDice, deleteMessage)
 
 	b.Handle(tb.OnUserLeft, func(m *tb.Message) {
 		b.Delete(m)
 	})
 
 	b.Start()
+}
+
+func deleteMessage(m *tb.Message) {
+	if m.Sender.ID == 777000 {
+		return
+	}
+
+	if m.ReplyTo == nil {
+		res, err := b.ChatMemberOf(m.Chat, m.Sender)
+		if err == nil && res.Role != tb.Creator && res.Role != tb.Administrator {
+			b.Delete(m)
+		}
+	}
 }
