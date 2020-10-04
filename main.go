@@ -22,6 +22,9 @@ func main() {
 	b.Handle(tb.OnUserJoined, func(m *tb.Message) {
 		b.Delete(m)
 		if m.UserJoined.ID == m.Sender.ID {
+			b.Ban(m.Chat, &tb.ChatMember{
+				User: m.Sender,
+			})
 			b.Unban(m.Chat, m.Sender)
 		}
 	})
